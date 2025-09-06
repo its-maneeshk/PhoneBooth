@@ -1,13 +1,15 @@
 {
-  "name": "client",
+  "name": "gizmo-launches",
   "private": true,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "npm-run-all --parallel dev:*",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "dev:server": "npm --prefix server run dev",
+    "dev:client": "npm --prefix client run dev"
   },
   "dependencies": {
     "react": "^19.1.1",
@@ -25,6 +27,7 @@
     "globals": "^16.3.0",
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.17",
-    "vite": "^7.1.2"
+    "vite": "^7.1.2",
+    "npm-run-all": "^4.1.5"
   }
 }

@@ -1,35 +1,26 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { Outlet, Link, useLocation } from "react-router-dom";
 
-function App() {
-  const [count, setCount] = useState(0)
-
+export default function App() {
+  const { pathname } = useLocation();
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <div className="min-h-screen bg-gray-50 text-gray-900">
+      <header className="border-b bg-white">
+        <div className="mx-auto max-w-6xl px-4 py-3 flex items-center justify-between">
+          <Link to="/" className="font-bold text-xl">Gizmo Launches</Link>
+          <nav className="flex gap-4 text-sm">
+            <Link className={pathname.startsWith("/phones")||pathname==="/" ? "font-semibold" : ""} to="/phones">Phones</Link>
+            <Link className={pathname.startsWith("/laptops") ? "font-semibold" : ""} to="/laptops">Laptops</Link>
+          </nav>
+        </div>
+      </header>
+      <main className="mx-auto max-w-6xl px-4 py-6">
+        <Outlet />
+      </main>
+      <footer className="border-t bg-white">
+        <div className="mx-auto max-w-6xl px-4 py-6 text-xs text-gray-500">
+          © {new Date().getFullYear()} Gizmo Launches — Admin at <span className="font-mono">/admin/login</span>
+        </div>
+      </footer>
+    </div>
+  );
 }
-
-export default App
