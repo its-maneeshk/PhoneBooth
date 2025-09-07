@@ -5,7 +5,13 @@ export default {
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        colmeak: ['colmeak', 'sans-serif'],
+        oups: ['oups', 'sans-serif'],
+        dirtylane: ['dirtylane', 'oups'],
+      },
+    },
   },
   plugins: [],
 }

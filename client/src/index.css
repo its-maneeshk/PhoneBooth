@@ -2,3 +2,21 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+  font-family: 'colmeak';
+  src: url('/fonts/colmeak/Colmeak.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'oups';
+  src: url('/fonts/oups/Oups.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'dirtylane';
+  src: url('../src/assets/fonts/dirtylane/Dirtylane.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+}

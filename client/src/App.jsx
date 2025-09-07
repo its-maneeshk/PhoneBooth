@@ -6,9 +6,9 @@ export default function App() {
     <div className="min-h-screen bg-gray-50 text-gray-900">
       <header className="border-b bg-white">
         <div className="mx-auto max-w-6xl px-4 py-3 flex items-center justify-between">
-          <Link to="/" className="font-bold text-xl">Gizmo Launches</Link>
+          <Link to="/" className="text-5xl font-dirtylane font-thin">Phone Booth</Link>
           <nav className="flex gap-4 text-sm">
-            <Link className={pathname.startsWith("/phones")||pathname==="/" ? "font-semibold" : ""} to="/phones">Phones</Link>
+            <Link className={pathname.startsWith("/phones") || pathname === "/" ? "font-semibold" : ""} to="/phones">Phones</Link>
             <Link className={pathname.startsWith("/laptops") ? "font-semibold" : ""} to="/laptops">Laptops</Link>
           </nav>
         </div>
@@ -17,8 +17,27 @@ export default function App() {
         <Outlet />
       </main>
       <footer className="border-t bg-white">
-        <div className="mx-auto max-w-6xl px-4 py-6 text-xs text-gray-500">
-          © {new Date().getFullYear()} Gizmo Launches — Admin at <span className="font-mono">/admin/login</span>
+        <div className="mx-auto max-w-6xl px-4 py-6 text-xs text-gray-500 text-center">
+          © {new Date().getFullYear()} Phone Booth — Made with ❤️ by{" "}
+          <span className="font-mono font-bold">
+            <a
+              href="https://www.manishpatel.com.np/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline hover:text-black"
+            >
+              Manish Patel
+            </a>
+          </span>
+          <div className="mt-1">
+            Wanna contact me?{" "}
+            <a
+              href="mailto:maneeshkurmii@gmail.com"
+              className="underline hover:text-black"
+            >
+              maneeshkurmii@gmail.com
+            </a>
+          </div>
         </div>
       </footer>
     </div>
