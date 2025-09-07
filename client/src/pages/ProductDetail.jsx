@@ -66,6 +66,13 @@ export default function ProductDetail() {
         ) : (
           <div className="mt-3 text-lg text-gray-500">Price not available</div>
         )}
+        
+        {/* ✅ Description */}
+        {p.description && (
+          <div className="mt-4 text-gray-700 text-sm">
+            {p.description}
+          </div>
+        )}
 
         {/* ✅ Specs */}
         <h2 className="mt-6 font-semibold text-lg">Specifications</h2>
@@ -82,5 +89,7 @@ export default function ProductDetail() {
         </div>
       </div>
     </article>
+
+
   );
 }

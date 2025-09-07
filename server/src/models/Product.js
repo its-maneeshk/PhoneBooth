@@ -9,6 +9,7 @@ const ProductSchema = new Schema({
   launchDate: { type: Date, required: true },
   price: { type: Number }, // optional
   specs: { type: Schema.Types.Mixed, default: {} }, // free-form spec object
+  description: { type: String, trim: true, default: "No description available for this product."},
   slug: { type: String, unique: true, index: true }
 }, { timestamps: true });
 

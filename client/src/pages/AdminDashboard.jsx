@@ -11,7 +11,8 @@ const emptyForm = {
   images: "", // comma-separated
   launchDate: "",
   price: "",
-  specs: {} // object in form state
+  specs: {}, // object in form state
+  description: "" // add this
 };
 
 const pageSizes = [10, 25, 50];
@@ -27,7 +28,8 @@ function toPayload(form) {
       .filter(Boolean),
     launchDate: form.launchDate ? new Date(form.launchDate).toISOString() : null,
     price: form.price ? Number(form.price) : undefined,
-    specs: form.specs || {}
+    specs: form.specs || {},
+    description: form.description || "No description available for this product."
   };
 }
 
@@ -319,7 +321,8 @@ export default function AdminDashboard() {
       images: (p.images || []).join(", "),
       launchDate: p.launchDate ? new Date(p.launchDate).toISOString().slice(0, 16) : "",
       price: p.price ?? "",
-      specs: p.specs || {}
+      specs: p.specs || {},
+      description: p.description || ""
     });
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -382,27 +385,27 @@ export default function AdminDashboard() {
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold">Admin Dashboard</h1>
         <div className="flex items-center gap-4">
-  <div className="flex flex-col">
-    <span className="text-sm font-medium text-gray-700">Admin</span>
-    <span className="text-xs text-gray-500">Logged in</span>
-  </div>
-  <button
-    onClick={() => Auth.logout().then(() => (location.href = "/"))}
-    className="flex items-center gap-1 px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded transition-colors duration-200"
-  >
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      className="h-4 w-4"
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-      strokeWidth={2}
-    >
-      <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1m0-10V5" />
-    </svg>
-    Logout
-  </button>
-</div>
+          <div className="flex flex-col">
+            <span className="text-sm font-medium text-gray-700">Admin</span>
+            <span className="text-xs text-gray-500">Logged in</span>
+          </div>
+          <button
+            onClick={() => Auth.logout().then(() => (location.href = "/"))}
+            className="flex items-center gap-1 px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded transition-colors duration-200"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-4 w-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1m0-10V5" />
+            </svg>
+            Logout
+          </button>
+        </div>
 
 
       </div>
@@ -491,6 +494,18 @@ export default function AdminDashboard() {
                 onChange={(e) => setField({ price: e.target.value })}
               />
             </div>
+
+            <div>
+              <label className="text-sm text-gray-600 block mb-1">Description</label>
+              <textarea
+                rows="4"
+                className="w-full border p-2 rounded"
+                value={form.description}
+                onChange={(e) => setField({ description: e.target.value })}
+                placeholder="Enter product description"
+              />
+            </div>
+
 
             <div>
               <label className="text-sm text-gray-600 block mb-1">Specs</label>
