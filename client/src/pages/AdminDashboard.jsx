@@ -381,14 +381,30 @@ export default function AdminDashboard() {
 
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold">Admin Dashboard</h1>
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => Auth.logout().then(() => (location.href = "/"))}
-            className="text-sm underline"
-          >
-            Logout
-          </button>
-        </div>
+        <div className="flex items-center gap-4">
+  <div className="flex flex-col">
+    <span className="text-sm font-medium text-gray-700">Admin</span>
+    <span className="text-xs text-gray-500">Logged in</span>
+  </div>
+  <button
+    onClick={() => Auth.logout().then(() => (location.href = "/"))}
+    className="flex items-center gap-1 px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded transition-colors duration-200"
+  >
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      className="h-4 w-4"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth={2}
+    >
+      <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1m0-10V5" />
+    </svg>
+    Logout
+  </button>
+</div>
+
+
       </div>
 
       <div className="grid md:grid-cols-3 gap-6">
@@ -424,7 +440,7 @@ export default function AdminDashboard() {
               >
                 <option value="phone">Phone</option>
                 <option value="laptop">Laptop</option>
-                <option value="accessory">Accessory</option>
+                {/* <option value="accessory">Accessory</option> */}
               </select>
             </div>
 
@@ -529,7 +545,7 @@ export default function AdminDashboard() {
               <option value="all">All categories</option>
               <option value="phone">Phone</option>
               <option value="laptop">Laptop</option>
-              <option value="accessory">Accessory</option>
+              {/* <option value="accessory">Accessory</option> */}
             </select>
 
             <select
