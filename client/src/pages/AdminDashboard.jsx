@@ -3,16 +3,6 @@ import { useEffect, useMemo, useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import { Products, Auth } from "../lib/api";
 
-/**
- * Enhanced Admin Dashboard
- * - Search / filter / sort / pagination
- * - SpecEditor (key/value rows -> JSON)
- * - Image thumbnails + gallery modal
- * - Undo delete via toast (re-create with previous data)
- *
- * Note: adapt CSS classes to your Tailwind setup.
- */
-
 /* ---------- Helpers ---------- */
 const emptyForm = {
   title: "",
@@ -21,7 +11,7 @@ const emptyForm = {
   images: "", // comma-separated
   launchDate: "",
   price: "",
-  specs: {} // object in form state (we'll serialize from SpecEditor)
+  specs: {} // object in form state
 };
 
 const pageSizes = [10, 25, 50];
@@ -31,7 +21,7 @@ function toPayload(form) {
     title: form.title,
     brand: form.brand,
     category: form.category,
-    images: form.images
+    images: (form.images || "")
       .split(",")
       .map((s) => s.trim())
       .filter(Boolean),
@@ -49,36 +39,52 @@ function previewUrlsFromForm(form) {
 }
 
 /* ---------- SpecEditor Component ---------- */
-/* Dynamic list of key/value rows that update a parent via onChange(obj) */
+/* Dynamic list of key/value rows that update a parent via onChange(obj)
+   IMPORTANT: prevent infinite loop by only calling onChange when object actually changes.
+*/
 function SpecEditor({ value = {}, onChange }) {
+  // initialize rows from value (stable)
   const [rows, setRows] = useState(() =>
-    Object.entries(value).map(([k, v]) => ({ k, v })) // [{k,v},...]
+    Object.entries(value || {}).map(([k, v]) => ({ k, v }))
   );
 
-  useEffectIf(() => {
-    // keep rows in sync when prop changes
-    setRows(Object.entries(value).map(([k, v]) => ({ k, v })));
-  }, [value]);
-
-  // synthesize object on rows change
-  useEffectIf(() => {
-    const obj = {};
-    rows.forEach(({ k, v }) => {
-      if (k.trim()) obj[k.trim()] = parsePossibleNumberOrBoolean(v);
-    });
-    onChange(obj);
-  }, [rows]);
-
+  // helper to parse numbers/booleans
   function parsePossibleNumberOrBoolean(v) {
     if (v === "true") return true;
     if (v === "false") return false;
     if (v === "" || v == null) return "";
-    // try number
     const n = Number(v);
     if (!Number.isNaN(n) && String(n) === String(v)) return n;
     return v;
   }
 
+  // Sync rows from parent value ONLY when keys changed (avoid stomping user edits)
+  useEffect(() => {
+    const currentKeys = rows.map((r) => r.k).sort().join(",");
+    const newKeys = Object.keys(value || {}).sort().join(",");
+    if (currentKeys !== newKeys) {
+      setRows(Object.entries(value || {}).map(([k, v]) => ({ k, v })));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value]); // intentionally not depending on rows here (we compare inside)
+
+  // Synthesize object from rows and push up only if different
+  useEffect(() => {
+    const obj = {};
+    rows.forEach(({ k, v }) => {
+      if (k && k.toString().trim()) obj[k.toString().trim()] = parsePossibleNumberOrBoolean(v);
+    });
+
+    // deep-equality via JSON string (sufficient for small specs object)
+    const same = JSON.stringify(obj) === JSON.stringify(value || {});
+    if (!same) {
+      // only call parent when there is an actual change
+      if (typeof onChange === "function") onChange(obj);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rows]);
+
+  // row helpers
   const setRowKey = (index, key) =>
     setRows((r) => r.map((row, i) => (i === index ? { ...row, k: key } : row)));
 
@@ -127,9 +133,8 @@ function SpecEditor({ value = {}, onChange }) {
         <button
           type="button"
           onClick={() => {
-            // clear all
             setRows([]);
-            onChange({});
+            if (typeof onChange === "function") onChange({});
           }}
           className="px-3 py-1 border rounded text-sm"
         >
@@ -142,7 +147,9 @@ function SpecEditor({ value = {}, onChange }) {
 
 /* ---------- ImageGalleryModal ---------- */
 function ImageGalleryModal({ urls = [], startIndex = 0, onClose }) {
-  const [index, setIndex] = useState(startIndex);
+  const [index, setIndex] = useState(startIndex || 0);
+  useEffect(() => setIndex(startIndex || 0), [startIndex]);
+
   if (!urls.length) return null;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 p-4">
@@ -151,7 +158,7 @@ function ImageGalleryModal({ urls = [], startIndex = 0, onClose }) {
           <div className="text-sm font-medium">Image Preview</div>
           <button onClick={onClose} className="px-2 py-1">Close</button>
         </div>
-        <div className="p-4 flex items-center justify-center">
+        <div className="p-4 flex items-center justify-center gap-4">
           <button
             onClick={() => setIndex((i) => (i - 1 + urls.length) % urls.length)}
             className="px-3 py-2"
@@ -180,13 +187,6 @@ function ImageGalleryModal({ urls = [], startIndex = 0, onClose }) {
   );
 }
 
-/* ---------- Small custom hooks to avoid duplication ---------- */
-function useEffectIf(effect, deps) {
-  // tiny wrapper that behaves like useEffect but named differently to avoid linter confusion.
-  // It is safe to use here for clarity in local components.
-  useEffect(effect, deps);
-}
-
 /* ---------- Main Component ---------- */
 export default function AdminDashboard() {
   // form uses object specs
@@ -200,7 +200,7 @@ export default function AdminDashboard() {
   // search/filter/sort/pagination
   const [q, setQ] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
-  const [sortBy, setSortBy] = useState("createdAt_desc"); // or title_asc, price_desc...
+  const [sortBy, setSortBy] = useState("createdAt_desc");
   const [pageSize, setPageSize] = useState(pageSizes[0]);
   const [page, setPage] = useState(1);
 
@@ -265,7 +265,7 @@ export default function AdminDashboard() {
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
   useEffect(() => {
     if (page > totalPages) setPage(totalPages);
-  }, [totalPages]);
+  }, [totalPages, page]);
 
   const pageItems = useMemo(() => {
     const start = (page - 1) * pageSize;
@@ -279,8 +279,6 @@ export default function AdminDashboard() {
     const err = {};
     if (!form.title || !form.title.trim()) err.title = "Title is required";
     if (!form.brand || !form.brand.trim()) err.brand = "Brand is required";
-    // specs is object; optional
-    // images: no validation but warn if invalid urls? skipping for brevity
     setErrors(err);
     return Object.keys(err).length === 0;
   };
@@ -328,58 +326,45 @@ export default function AdminDashboard() {
 
   /* ---------- Delete with Undo ---------- */
   const onDelete = async (p) => {
-    // Save a copy for undo
     const backup = { ...p };
-    // Immediate UI removal
     setData((d) => d.filter((x) => x._id !== p._id));
 
-    // show toast with Undo
-    const id = toast(
-      (t) => (
-        <div className="flex items-center gap-3">
-          <div>Deleted {p.title}</div>
-          <button
-            className="ml-2 underline text-sm"
-            onClick={async () => {
-              toast.dismiss(t.id);
-              // Recreate item on server
-              try {
-                const payload = {
-                  title: backup.title,
-                  brand: backup.brand,
-                  category: backup.category,
-                  images: backup.images || [],
-                  launchDate: backup.launchDate || null,
-                  price: backup.price,
-                  specs: backup.specs || {}
-                };
-                await Products.create(payload);
-                toast.success("Undo: product restored");
-                load();
-              } catch (err) {
-                console.error(err);
-                toast.error("Failed to restore item");
-                load(); // reload to reconcile
-              }
-            }}
-          >
-            Undo
-          </button>
-        </div>
-      ),
-      { duration: 5000 }
-    );
+    const id = toast((t) => (
+      <div className="flex items-center gap-3">
+        <div>Deleted {p.title}</div>
+        <button
+          className="ml-2 underline text-sm"
+          onClick={async () => {
+            toast.dismiss(t.id);
+            try {
+              const payload = {
+                title: backup.title,
+                brand: backup.brand,
+                category: backup.category,
+                images: backup.images || [],
+                launchDate: backup.launchDate || null,
+                price: backup.price,
+                specs: backup.specs || {}
+              };
+              await Products.create(payload);
+              toast.success("Undo: product restored");
+              load();
+            } catch (err) {
+              console.error(err);
+              toast.error("Failed to restore item");
+              load();
+            }
+          }}
+        >
+          Undo
+        </button>
+      </div>
+    ), { duration: 5000 });
 
-    // After toast disappears, perform actual delete on server
     setTimeout(async () => {
-      // If user clicked undo, the item will be recreated and load() will refresh; skip server delete.
-      // To detect that reliably is complex; we'll attempt deleting but if item already removed we handle error.
       try {
         await Products.remove(p._id);
-        // final confirmation toast (optional)
-        // toast.success("Deleted permanently");
       } catch (err) {
-        // If delete fails because item already recreated, ignore
         console.error("delete failed", err);
       }
     }, 5200);
@@ -605,7 +590,6 @@ export default function AdminDashboard() {
             {/* list */}
             <div className="p-3 space-y-2">
               {loading ? (
-                // simple skeletons
                 Array.from({ length: pageSize }).map((_, i) => (
                   <div key={i} className="flex items-center gap-3 animate-pulse">
                     <div className="w-16 h-16 bg-gray-200 rounded" />

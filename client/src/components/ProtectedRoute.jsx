@@ -1,17 +1,34 @@
 import { useEffect, useState } from "react";
-import { Auth } from "../lib/api";
 import { Navigate } from "react-router-dom";
+import { Auth } from "../lib/api";
 
 export default function ProtectedRoute({ children }) {
-  const [state, setState] = useState({ loading: true, ok: false });
+  const [authState, setAuthState] = useState({
+    loading: true,
+    isAuthenticated: false,
+  });
 
   useEffect(() => {
-    Auth.me()
-      .then(() => setState({ loading: false, ok: true }))
-      .catch(() => setState({ loading: false, ok: false }));
+    let isMounted = true; // prevent state update if component unmounts
+
+    const checkAuth = async () => {
+      try {
+        await Auth.me(); // your API call to validate auth
+        if (isMounted) setAuthState({ loading: false, isAuthenticated: true });
+      } catch (err) {
+        if (isMounted) setAuthState({ loading: false, isAuthenticated: false });
+      }
+    };
+
+    checkAuth();
+
+    return () => {
+      isMounted = false; // cleanup
+    };
   }, []);
 
-  if (state.loading) return <div>Loading…</div>;
-  if (!state.ok) return <Navigate to="/admin/login" replace />;
+  if (authState.loading) return <div>Loading…</div>;
+  if (!authState.isAuthenticated) return <Navigate to="/admin/login" replace />;
+
   return children;
 }
